@@ -1,0 +1,30 @@
+module.exports = {
+    exerciseDirectoryFrame: {
+        exerciseGroups: ['.exercise-directory-container > li > a @ href'],
+    },
+    exerciseMenuFrame: {
+        exercises: ['a @ href'],
+    },
+    exerciseFrame: {
+        name: '.exercise-name-container h1',
+        video: '.ExVideo < html || src=\\"(.+?)\\"',
+        musclesGroups: {
+            _s: '.exercise-section.muscles .muscle-group',
+            _d: [
+                {
+                    groupName: '.muscle-group-title',
+                    muscles: ['.muscle-group-list li'],
+                },
+            ],
+        },
+        classification: {
+            _s: '.exercise-section.classification',
+            _d: {
+                utility: 'tr:contains("Force:") a',
+                mechanics: 'tr:contains("Mechanics:") a',
+                force: 'tr:contains("Force:") a',
+            },
+        },
+        instructions: '.exercise-section.instructions < html',
+    },
+};
