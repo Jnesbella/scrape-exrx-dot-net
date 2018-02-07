@@ -59,5 +59,14 @@ function getExercise(exerciseUrl) {
 module.exports = {
     async scrape() {
         const exerciseGroups = await getExerciseDirectory();
+
+        const exercisesByGroup = await Promise.all(
+            exerciseGroups.map(group => getExercises(group))
+        );
+
+        const exercises = _.flow([_.flatten, _.sortBy, _.uniq])(
+            exercisesByGroup
+        );
+        return exercises;
     },
 };
