@@ -46,7 +46,7 @@ module.exports = {
                 _.filter(exercises, exercise => regex.test(exercise)),
             exercises =>
                 exercises.map(exerciseUrl =>
-                    exerciseUrl.replace(regex, 'www.exrx.net/')
+                    exerciseUrl.replace(regex, 'http://www.exrx.net/')
                 ),
             _.uniq,
             exercises => _.sortBy(exercises, exercise => exercise),
@@ -58,6 +58,6 @@ module.exports = {
         const $ = cheerio.load(transformedExercise);
         jsonframe($);
 
-        return $('body').scrape(exerciseFrame, { string: true });
+        return $('body').scrape(exerciseFrame);
     },
 };
