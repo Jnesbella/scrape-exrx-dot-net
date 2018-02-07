@@ -22,9 +22,14 @@ module.exports = {
         const $ = cheerio.load(transformedExerciseDirectory);
         jsonframe($);
 
-        return $('body')
-            .scrape(exerciseDirectoryFrame)
-            .exerciseGroups.map(group => `http://www.exrx.net/Lists/${group}`);
+        return _.flow([
+            ({ exerciseGroups }) =>
+                exerciseGroups.map(
+                    group => `http://www.exrx.net/Lists/${group}`
+                ),
+            exerciseGroups => _.sortBy(exerciseGroups, group => group),
+            _.uniq,
+        ])($('body').scrape(exerciseDirectoryFrame));
     },
     scrapeExerciseMenu(exerciseMenuAsHtml) {
         const transformedExerciseMenu = exerciseMenuTransformer(
@@ -33,12 +38,6 @@ module.exports = {
 
         const $ = cheerio.load(transformedExerciseMenu);
         jsonframe($);
-
-        // return $('body')
-        //     .scrape(exerciseMenuFrame)
-        //     .exercises.map(exerciseUrl =>
-        //         exerciseUrl.replace(/(\.{2}\/)+/g, 'www.exrx.net/')
-        //     );
 
         const regex = /^(\.{2}\/){2}/g;
 
