@@ -27,7 +27,8 @@ async function getData({ uri, transform, folder }) {
 
     try {
         return await fs.readJson(path);
-    } catch (err) {
+    }
+    catch (err) {
         const data = await rp({
             uri,
             transform,
@@ -65,15 +66,29 @@ module.exports = {
     async scrape() {
         const exerciseGroups = await getExerciseDirectory();
 
-        const exercisesByGroup = await Promise.all(
-            exerciseGroups.map(group => getExercises(group))
-        );
+        console.log(exerciseGroups);
 
-        const exercises = await Promise.all(
-            exercisesByGroup.map(
-                async group => await Promise.all(group.map(e => getExercise(e)))
-            )
-        );
+        let exerciseUrls = [];
+        try {
+            for (let exerciseGroup of exerciseGroups) {
+                const currUrls = await getExercises(exerciseGroup);
+                exerciseUrls = [...exerciseUrls, ...currUrls];
+            }
+        }
+        catch (err) {
+            console.log('-- ERR - getExercises --', err);
+        }
+
+        let exercises = [];
+        try {
+            for (let exerciseUrl of exerciseUrls) {
+                const currExercise = await getExercise(exerciseUrl);
+                exercises = [...exercises, currExercise];
+            }
+        }
+        catch (err) {
+            console.log('-- ERR - getExercise --', err);
+        }
 
         return _.flow([
             _.flatten,
