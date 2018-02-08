@@ -19,21 +19,25 @@ function getFilenameFromUrl(url) {
 }
 
 async function getData({ uri, transform, folder }) {
+    let data = null;
     const filename = getFilenameFromUrl(uri);
     const path = `tmp/exrx-dot-net${folder ? folder : ''}${filename}`;
 
     try {
-        return await fs.readJson(path);
+        data = await fs.readJson(path);
+    } catch (errReadFileFail) {
+        try {
+            data = await rp({
+                uri,
+                transform,
+            });
+            await fs.outputJson(path, data);
+        } catch (errGetDataFail) {
+            console.log('-- ERR - getData --', errGetDataFail);
+        }
     }
-    catch (err) {
-        const data = await rp({
-            uri,
-            transform,
-        });
-        await fs.outputJson(path, data);
 
-        return data;
-    }
+    return data;
 }
 
 function getExerciseGroups() {
@@ -42,27 +46,24 @@ function getExerciseGroups() {
             uri: 'http://www.exrx.net/Lists/Directory.html',
             transform: scrapeExerciseDirectory,
         });
-    }
-    catch (err) {
+    } catch (err) {
         console.log('-- ERR - getExerciseGroups --', err);
     }
-
 }
 
 async function getExerciseUrls(exerciseGroups) {
     let exerciseUrls = [];
 
-
     for (let uri of exerciseGroups) {
-        let urlsToAdd = []
+        let urlsToAdd = [];
+
         try {
             urlsToAdd = await getData({
                 uri,
                 transform: scrapeExerciseMenu,
                 folder: '/muscle-groups',
             });
-        }
-        catch (err) {
+        } catch (err) {
             console.log('-- ERR - getExerciseUrls --', err);
         }
 
@@ -74,7 +75,6 @@ async function getExerciseUrls(exerciseGroups) {
 
 async function getExercises(exerciseUrls) {
     let exercises = [];
-
 
     for (let uri of exerciseUrls) {
         let exercise = null;
@@ -88,8 +88,7 @@ async function getExercises(exerciseUrls) {
                 }),
                 folder: '/exercises',
             });
-        }
-        catch (err) {
+        } catch (err) {
             console.log('-- ERR - getExercises --', err);
         }
 
