@@ -1,5 +1,17 @@
-const fs = require('fs');
+const PouchDB = require('pouchdb');
 
-const { scrape } = require('./exrx-dot-com');
+const exrxDotNet = require('./exrx-dot-com');
 
-scrape().then(res => console.log(res));
+async function loadExerciseData() {
+    return await exrxDotNet.scrape();
+}
+
+function storeExerciseData() {
+    const db = new PouchDB('exercises');
+}
+
+function run() {
+    loadExerciseData();
+}
+
+run();
