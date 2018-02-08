@@ -39,14 +39,23 @@ module.exports = {
         const $ = cheerio.load(transformedExerciseMenu);
         jsonframe($);
 
-        const regex = /^(\.{2}\/){2}/g;
+        const regexProperDepth = /^(\.{2}\/){2}/g; // ../../someExerciseUrl
+        const regexEndsInDotHtml = /\.html$/; // someExercuseUrl.html
 
         return _.flow([
             ({ exercises }) =>
-                _.filter(exercises, exercise => regex.test(exercise)),
+                _.filter(
+                    exercises,
+                    exercise =>
+                        regexProperDepth.test(exercise) &&
+                        regexEndsInDotHtml.test(exercise)
+                ),
             exercises =>
                 exercises.map(exerciseUrl =>
-                    exerciseUrl.replace(regex, 'http://www.exrx.net/')
+                    exerciseUrl.replace(
+                        regexProperDepth,
+                        'http://www.exrx.net/'
+                    )
                 ),
             _.uniq,
             exercises => _.sortBy(exercises, exercise => exercise),

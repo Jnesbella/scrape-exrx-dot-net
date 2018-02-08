@@ -13,7 +13,9 @@ module.exports = {
             _d: [
                 {
                     groupName: '.muscle-group-title',
-                    muscles: ['.muscle-group-list li'],
+                    muscles: ['.muscle-group-list > li > a'],
+                    // "http://www.exrx.net/WeightExercises/TransverseAbdominus/AbdominalVacuum.html"
+                    // look there ^ for some interesting muscle group use case
                 },
             ],
         },

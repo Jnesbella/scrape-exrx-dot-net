@@ -42,7 +42,10 @@ module.exports = {
         $('body table:first-of-type').addClass('exercise-name-container');
         $('body table.bar').remove(); // navigation bar
 
-        const exerciseContainer = $('.ExVideo').closest('table');
+        // const exerciseContainer = $('.ExVideo').closest('table');
+        const exerciseContainer = $('body h2:contains("Instructions")').closest(
+            'table'
+        );
         exerciseContainer.addClass('exercise-container');
 
         exerciseContainer.find('tr  td  h2').each((i, elm) => {
