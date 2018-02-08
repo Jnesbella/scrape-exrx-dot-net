@@ -14,16 +14,13 @@ const {
     scrapeExerciseMenu,
 } = require('./scrapers');
 
-const root = 'http://www.exrx.net/Lists/Directory.html';
-const dir = 'tmp/exrx-dot-net';
-
 function getFilenameFromUrl(url) {
-    return url.match(/\/(?:.(?!\/))+$/)[0].replace('html', 'json');
+    return url.match(/\/(?:.(?!\/))+\.html$/)[0].replace('html', 'json');
 }
 
 async function getData({ uri, transform, folder }) {
     const filename = getFilenameFromUrl(uri);
-    const path = `${dir}${folder ? folder : ''}${filename}`;
+    const path = `tmp/exrx-dot-net${folder ? folder : ''}${filename}`;
 
     try {
         return await fs.readJson(path);
@@ -39,56 +36,74 @@ async function getData({ uri, transform, folder }) {
     }
 }
 
-function getExerciseDirectory() {
-    return getData({ uri: root, transform: scrapeExerciseDirectory });
+function getExerciseGroups() {
+    try {
+        return getData({
+            uri: 'http://www.exrx.net/Lists/Directory.html',
+            transform: scrapeExerciseDirectory,
+        });
+    }
+    catch (err) {
+        console.log('-- ERR - getExerciseGroups --', err);
+    }
+
 }
 
-function getExercises(exerciseGroupUrl) {
-    return getData({
-        uri: exerciseGroupUrl,
-        transform: scrapeExerciseMenu,
-        folder: '/muscle-groups',
-    });
-}
+async function getExerciseUrls(exerciseGroups) {
+    let exerciseUrls = [];
 
-function getExercise(exerciseUrl) {
-    return getData({
-        uri: exerciseUrl,
-        transform: html => ({
-            ...scrapeExercise(html),
-            source: exerciseUrl,
-        }),
-        folder: '/exercises',
-    });
-}
 
-module.exports = {
-    async scrape() {
-        const exerciseGroups = await getExerciseDirectory();
-
-        console.log(exerciseGroups);
-
-        let exerciseUrls = [];
+    for (let uri of exerciseGroups) {
+        let urlsToAdd = []
         try {
-            for (let exerciseGroup of exerciseGroups) {
-                const currUrls = await getExercises(exerciseGroup);
-                exerciseUrls = [...exerciseUrls, ...currUrls];
-            }
+            urlsToAdd = await getData({
+                uri,
+                transform: scrapeExerciseMenu,
+                folder: '/muscle-groups',
+            });
+        }
+        catch (err) {
+            console.log('-- ERR - getExerciseUrls --', err);
+        }
+
+        exerciseUrls = [...exerciseUrls, ...urlsToAdd];
+    }
+
+    return exerciseUrls;
+}
+
+async function getExercises(exerciseUrls) {
+    let exercises = [];
+
+
+    for (let uri of exerciseUrls) {
+        let exercise = null;
+
+        try {
+            exercise = await getData({
+                uri,
+                transform: html => ({
+                    ...scrapeExercise(html),
+                    source: uri,
+                }),
+                folder: '/exercises',
+            });
         }
         catch (err) {
             console.log('-- ERR - getExercises --', err);
         }
 
-        let exercises = [];
-        try {
-            for (let exerciseUrl of exerciseUrls) {
-                const currExercise = await getExercise(exerciseUrl);
-                exercises = [...exercises, currExercise];
-            }
-        }
-        catch (err) {
-            console.log('-- ERR - getExercise --', err);
-        }
+        exercises = exercise ? [...exercises, exercise] : exercises;
+    }
+
+    return exercises;
+}
+
+module.exports = {
+    async scrape() {
+        const exerciseGroups = await getExerciseGroups();
+        const exerciseUrls = await getExerciseUrls(exerciseGroups);
+        const exercises = await getExercises(exerciseUrls);
 
         return _.flow([
             _.flatten,
