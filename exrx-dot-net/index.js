@@ -14,23 +14,49 @@ const {
     scrapeExerciseMenu,
 } = require('./scrapers');
 
-function getFilenameFromUrl(url) {
-    return url.match(/\/(?:.(?!\/))+\.html$/)[0].replace('html', 'json');
+function getFilenameFromUrl(url, fileExtension = '.html') {
+    return url
+        .match(/\/(?:.(?!\/))+\.html$/)[0]
+        .replace(/\.html$/, fileExtension);
+}
+
+const root = 'tmp/exrx-dot-net';
+
+async function getHtml({ uri }) {
+    let html = '';
+    const filename = getFilenameFromUrl(uri);
+    const directory = `${root}/html`;
+    const path = `${directory}${filename}`;
+
+    try {
+        html = await fs.readFile(path);
+    } catch (errReadLocalHtml) {
+        try {
+            html = await rp({ uri });
+            await fs.ensureDir(directory);
+            await fs.writeFile(path, html);
+        } catch (errReadRemoteHtml) {
+            console.log('-- ERR - getHtml --', errReadRemoteHtml);
+        }
+    }
+
+    return html;
 }
 
 async function getData({ uri, transform, folder }) {
     let data = null;
-    const filename = getFilenameFromUrl(uri);
-    const path = `tmp/exrx-dot-net${folder ? folder : ''}${filename}`;
+    const filename = getFilenameFromUrl(uri, '.json');
+    const path = `${root}${folder ? folder : ''}${filename}`;
 
     try {
         data = await fs.readJson(path);
     } catch (errReadFileFail) {
         try {
-            data = await rp({
+            const html = await getHtml({
+                filename,
                 uri,
-                transform,
             });
+            data = transform(html);
             await fs.outputJson(path, data);
         } catch (errGetDataFail) {
             console.log('-- ERR - getData --', errGetDataFail);
@@ -54,20 +80,20 @@ function getExerciseGroups() {
 async function getExerciseUrls(exerciseGroups) {
     let exerciseUrls = [];
 
-    for (let uri of exerciseGroups) {
-        let urlsToAdd = [];
+    try {
+        for (let uri of exerciseGroups) {
+            let urlsToAdd = [];
 
-        try {
             urlsToAdd = await getData({
                 uri,
                 transform: scrapeExerciseMenu,
                 folder: '/muscle-groups',
             });
-        } catch (err) {
-            console.log('-- ERR - getExerciseUrls --', err);
-        }
 
-        exerciseUrls = [...exerciseUrls, ...urlsToAdd];
+            exerciseUrls = [...exerciseUrls, ...urlsToAdd];
+        }
+    } catch (err) {
+        console.log('-- ERR - getExerciseUrls --', err);
     }
 
     return exerciseUrls;

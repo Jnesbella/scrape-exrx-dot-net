@@ -8,11 +8,13 @@ module.exports = {
     exerciseFrame: {
         name: '.exercise-name-container h1',
         video: '.ExVideo < html || src=\\"(.+?)\\"',
-        musclesGroups: {
+        muscleGroups: {
             _s: '.exercise-section.muscles .muscle-group',
             _d: [
                 {
                     groupName: '.muscle-group-title',
+                    // i tags can have some comments
+                    // http://www.exrx.net/WeightExercises/Quadriceps/SBSquatSelfSpot.html
                     muscles: ['.muscle-group-list > li > a'],
                     // "http://www.exrx.net/WeightExercises/TransverseAbdominus/AbdominalVacuum.html"
                     // look there ^ for some interesting muscle group use case

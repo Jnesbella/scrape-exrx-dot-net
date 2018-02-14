@@ -42,7 +42,6 @@ module.exports = {
         $('body table:first-of-type').addClass('exercise-name-container');
         $('body table.bar').remove(); // navigation bar
 
-        // const exerciseContainer = $('.ExVideo').closest('table');
         const exerciseContainer = $('body h2:contains("Instructions")').closest(
             'table'
         );
@@ -74,6 +73,11 @@ module.exports = {
                 $elm.before(wrapper);
                 wrapper.append($elm);
                 wrapper.append(toWrap);
+
+                $elm.children('i').remove();
+                // see http://www.exrx.net/WeightExercises/Quadriceps/SBSquatSelfSpot.html
+                // for example of <i> muscle group name
+                // are these important at all?
             });
 
         return $.html();
