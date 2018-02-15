@@ -35,22 +35,28 @@ function massageMuscleGroups(exercise) {
                 names = groupNameSansParens.split(regexMultiGroup);
             }
 
-            return fp.each(name => {
-                return {
-                    ...groups,
-                    [name]: [...(groups[name] || []), ...muscles],
-                };
-            })(names);
+            let updatedMuscleGroups = { ...groups };
+            for (let name of names) {
+                const existing = updatedMuscleGroups[name] || [];
+                const toAdd = { [name]: [...existing, ...muscles] };
+
+                updatedMuscleGroups = { ...updatedMuscleGroups, ...toAdd };
+            }
+
+            // const temp = fp.each((name, i, coll) => {
+            //     console.log(coll);
+            //     return {
+            //         ...groups,
+            //         [name]: [...(groups[name] || []), ...muscles],
+            //     };
+            // })(names);
+            // console.log(updatedMuscleGroups);
+            return updatedMuscleGroups;
         }, {}),
-        fp.map((groupName, muscles) => {
-            return {
-                groupName,
-                muscles: fp.uniq(muscles),
-            };
+        fp.map.convert({ cap: false })((muscles, groupName) => {
+            return { groupName, muscles: fp.uniq(muscles) };
         })
     )(exercise.muscleGroups);
-
-    // console.log(massagedMuscleGroups);
 
     return {
         ...exercise,
@@ -70,20 +76,23 @@ function getMuscleGroups(exercises) {
             );
         }),
         fp.flatten,
-        fp.uniq
+        fp.uniq,
+        fp.sortBy(name => name)
     )(exercises);
 }
 
 function getMuscles(exercises) {
-    return _.flow([
-        () =>
-            exercises.map(exercise =>
-                exercise.muscleGroups.map(group => group.muscles)
-            ),
-        arrOfGroups => _.flatten(arrOfGroups),
-        arrOfMuscles => _.flatten(arrOfMuscles),
-        muscles => _.uniq(muscles),
-    ])();
+    return fp.flow(
+        fp.map(exercise => {
+            return fp.map(group => {
+                return group.muscles;
+            })(exercise.muscleGroups);
+        }),
+        fp.flatten,
+        fp.flatten,
+        fp.uniq,
+        fp.sortBy(name => name)
+    )(exercises);
 }
 
 async function run() {
@@ -92,7 +101,8 @@ async function run() {
     const massagedExercises = fp.map(massageExerciseData)(exercises);
 
     console.log('-- MUSCLE GROUPS --', getMuscleGroups(massagedExercises));
-    // console.log('-- MUSCLES --', getMuscles(exercises));
+    console.log('-- MUSCLES --', getMuscles(massagedExercises));
+    // getMuscles(massagedExercises);
 
     // const db = new PouchDB('exrxDotNet');
     // for (let exercise of exercises) {
