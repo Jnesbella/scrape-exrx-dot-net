@@ -1,12 +1,16 @@
 const rp = require('request-promise');
 const fs = require('fs-extra');
 const path = require('path');
+// TODO replace _ with fp
 const _ = require('lodash');
+const fp = require('lodash/fp');
 
 const {
     exerciseDirectoryMock,
     backExercisesMock,
 } = require('./mock/utils-exrx');
+
+const { massageExerciseData } = require('./data-utils');
 
 const {
     scrapeExercise,
@@ -130,10 +134,11 @@ module.exports = {
         const exerciseUrls = await getExerciseUrls(exerciseGroups);
         const exercises = await getExercises(exerciseUrls);
 
-        return _.flow([
-            _.flatten,
-            flattenedExercises => _.uniqBy(flattenedExercises, e => e.source),
-            uniqueExercises => _.sortBy(uniqueExercises, e => e.name),
-        ])(exercises);
+        return fp.flow(
+            fp.flatten,
+            fp.uniqBy(e => e.source),
+            fp.sortBy(e => e.name),
+            fp.map(massageExerciseData)
+        )(exercises);
     },
 };
