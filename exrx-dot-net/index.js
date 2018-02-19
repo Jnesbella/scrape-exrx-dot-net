@@ -1,8 +1,6 @@
 const rp = require('request-promise');
 const fs = require('fs-extra');
 const path = require('path');
-// TODO replace _ with fp
-const _ = require('lodash');
 const fp = require('lodash/fp');
 
 const {

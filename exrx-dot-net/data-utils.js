@@ -86,9 +86,13 @@ function massageMuscleGroups(exercise) {
 }
 
 function addExerciseEquipment(exercise) {
+    const { name } = exercise;
     return {
         ...exercise,
-        equipment: [],
+        equipment: fp.compact([
+            /dumbbell/i.test(name) ? 'dumbbell' : undefined,
+            /barbell/i.test(name) ? 'barbell' : undefined,
+        ]),
     };
 }
 
