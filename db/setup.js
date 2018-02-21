@@ -27,9 +27,9 @@ async function initExerciseDB() {
         }
     }
 
-    // await exerciseDB.createIndex({
-    //     index: { fields: ['name'] },
-    // });
+    await exerciseDB.createIndex({
+        index: { fields: ['name'] },
+    });
 
     // search exercise names for barbell
     // try {
@@ -71,6 +71,8 @@ function getMuscles(exercises) {
     )(exercises);
 }
 
-module.exports = {
-    exercisesDB: initExerciseDB(),
+module.exports = async function() {
+    return {
+        exercisesDB: await initExerciseDB(),
+    };
 };

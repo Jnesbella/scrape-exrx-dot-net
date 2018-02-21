@@ -5,7 +5,7 @@ const db = require('./db');
 const api = require('./api');
 
 async function run() {
-    api.start();
+    api.start(await db());
 }
 
 run();

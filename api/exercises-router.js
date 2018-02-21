@@ -1,19 +1,11 @@
 const express = require('express');
 
-const { EXERCISES } = require('../db');
+module.exports = function({ EXERCISES }) {
+    const router = express.Router();
 
-const router = express.Router();
+    router.get('/exercises', async (req, res, next) => {
+        res.send(await EXERCISES.getExercises());
+    });
 
-router.get('/exercises', async (req, res, next) => {
-    const exercises = await EXERCISES;
-    res.send(await exercises.getExercises());
-});
-
-// async function test() {
-//     const e = await EXERCISES;
-//     const es = await e.getExercises();
-//     console.log(es[1]);
-// }
-// test();
-
-module.exports = router;
+    return router;
+};

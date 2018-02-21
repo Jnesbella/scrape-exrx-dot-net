@@ -2,14 +2,14 @@ const express = require('express');
 const https = require('https');
 const http = require('http');
 
-const exercisesRouter = require('./exercises-router');
+const ExercisesRouter = require('./exercises-router');
 
 const app = express();
 
-function start() {
-    app.use(exercisesRouter);
+function start(db) {
+    app.use(ExercisesRouter(db));
 
-    // http.createServer(app).listen(80);
+    http.createServer(app).listen(80);
     // https.createServer(options, app).listen(443);
 }
 

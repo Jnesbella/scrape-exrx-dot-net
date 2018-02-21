@@ -1,6 +1,10 @@
-const { exercisesDB } = require('./setup');
-const Exercises = require('./exercises');
+const setup = require('./setup');
+const Exercises = require('./exercises-table');
 
-module.exports = {
-    EXERCISES: Exercises(exercisesDB),
+module.exports = async function() {
+    const { exercisesDB } = await setup();
+
+    return {
+        EXERCISES: Exercises(exercisesDB),
+    };
 };

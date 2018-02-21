@@ -1,16 +1,11 @@
 const fp = require('lodash/fp');
 
-module.exports = async function(exercisesDB) {
-    const exercises = await exercisesDB;
-    // console.log(await exercisesDB.allDocs());
-
+module.exports = function(exercisesDB) {
     return {
         async getExercises() {
-            const allExercises = await exercises.allDocs({
+            const allExercises = await exercisesDB.allDocs({
                 include_docs: true,
             });
-
-            // console.log(allExercises.rows[1].doc);
 
             return fp.flow(
                 fp.map(e => e.doc),
