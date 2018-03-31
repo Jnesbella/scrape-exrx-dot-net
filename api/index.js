@@ -1,12 +1,9 @@
-const express = require('express');
 const https = require('https');
 const http = require('http');
 
 const ExercisesRouter = require('./exercises-router');
 
-const app = express();
-
-function start(db) {
+function start(app, db) {
     app.use(ExercisesRouter(db));
 
     http.createServer(app).listen(80);
@@ -15,7 +12,9 @@ function start(db) {
 
 function stop() {}
 
-module.exports = {
-    start,
-    stop,
+module.exports = function(app, db) {
+    return {
+        start: () => start(app, db),
+        stop,
+    };
 };

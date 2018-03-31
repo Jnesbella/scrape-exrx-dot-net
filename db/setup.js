@@ -6,7 +6,8 @@ const exrxDotNet = require('../exrx-dot-net');
 const loadExerciseData = () => exrxDotNet.scrape();
 
 function transformScrapedExerciseToDatabaseEntity({ source, ...exerciseData }) {
-    const _id = source;
+    // const _id = source;
+    const _id = fp.kebabCase(exerciseData.name);
     return {
         ...exerciseData,
         _id,
@@ -23,7 +24,7 @@ async function initExerciseDB() {
                 transformScrapedExerciseToDatabaseEntity(exercise)
             );
         } catch (err) {
-            // console.log('-- ERR - db.put --', err);
+            console.log('-- ERR - db.put --', err);
         }
     }
 
